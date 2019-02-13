@@ -2,6 +2,7 @@
 #define SCREEN_H
 
 #include<SDL2/SDL.h>
+#include<mutex>
 
 class Screen
 {
@@ -17,8 +18,8 @@ private:
 
     bool init_screen();
     void clean_resources();
-    void horizontal_conv();
-    void vertical_conv();
+    void horizontal_conv(std::mutex& t_lock);
+    void vertical_conv(std::mutex& t_lock);
 
 public:
     Screen();

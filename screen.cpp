@@ -1,5 +1,7 @@
 #include "screen.h"
 #include<iostream>
+#include<thread>
+#include<mutex>
 
 Screen::Screen():SCREEN_WIDTH(800),
                  SCREEN_HEIGHT(600)
@@ -89,7 +91,7 @@ void Screen::clear_screen()
           this->SCREEN_WIDTH*this->SCREEN_HEIGHT*sizeof(Uint32));
 }
 
-void Screen::horizontal_conv()
+void Screen::horizontal_conv(std::mutex& t_lock)
 {
     int end = this->SCREEN_HEIGHT*this->SCREEN_WIDTH;
     Uint32* temp = new Uint32[end];
@@ -115,11 +117,12 @@ void Screen::horizontal_conv()
         temp[pos] = (red<<24) + (green<<16) + (blue<<8) + 0xFF;
     }
 
+	std::lock_guard<std::mutex> guard(t_lock);
     delete [] this->buffer;
     this->buffer = temp;
 }
 
-void Screen::vertical_conv()
+void Screen::vertical_conv(std::mutex& t_lock)
 {
     int end = this->SCREEN_HEIGHT*this->SCREEN_WIDTH;
     Uint32* temp = new Uint32[end];
@@ -144,6 +147,8 @@ void Screen::vertical_conv()
 
         temp[pos] = (red<<24) + (green<<16) + (blue<<8) + 0xFF;
     }
+
+	std::lock_guard<std::mutex> guard(t_lock);
     delete [] this->buffer;
     this->buffer = temp;
 }
@@ -201,8 +206,12 @@ void Screen::box_blur()
     /* this new function uses separable filters and it's faster
      * than the old one
      */
-    horizontal_conv();
-    vertical_conv();
+	std::mutex t_lock;
+	std::thread horizontal([this,&t_lock]() {horizontal_conv(t_lock);});
+    std::thread vertical([this,&t_lock]() {vertical_conv(t_lock);});
+
+	horizontal.join();
+	vertical.join();
 }
 
 

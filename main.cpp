@@ -48,12 +48,12 @@ int main()
         screen.update_screen();
 
         delta = SDL_GetTicks() - time;
-        DEBUG("DELTA " << delta)
         swarm.update_particles_position(delta);
 
         if(screen.close()) { break; }
 
-        DEBUG("Looptime(milliseconds): " << SDL_GetTicks() - time)
+        DEBUG("Looptime(milliseconds) ~= " << delta)
+        DEBUG("Frames ~= " << 1000/delta)
     }
 
 
